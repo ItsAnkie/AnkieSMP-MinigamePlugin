@@ -24,6 +24,11 @@ challenges:
     amount: 1
 
   - name: farm_wheat
-    type: farm_item
+    type: break_block
     block: WHEAT
     amount: 20
+
+  - name: harvest_glow_berry
+    type: farm_item
+    block: GLOW_BERRIES
+    amount: 3

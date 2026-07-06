@@ -87,7 +87,6 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                                 activeChallenge.type = (String) data.get("type");
                                 activeChallenge.block = Material.getMaterial((String) data.get("block"));
                                 activeChallenge.amount = (int) data.get("amount");
-                                Bukkit.broadcast(Component.text("FARMING!!!"));
                                 break;
                             case "fill_item":
                                 activeChallenge.name = (String) data.get("name");
@@ -175,10 +174,11 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
             }
         }
 
+        // Werkt nog niet idk why kut ding xD
         @EventHandler
-        public void onCropHarvest(BlockBreakEvent event) {
+        public void onCropHarvest(PlayerHarvestBlockEvent event) {
             if (activeChallenge.type.equals("farm_item")) {
-                if (event.getBlock().getBlockData().getMaterial().equals(activeChallenge.block)) {
+                if (event.getHarvestedBlock().getBlockData().getMaterial().equals(activeChallenge.block)) {
                     Player player = event.getPlayer();
                     UUID uuid = player.getUniqueId();
                     int temp = totalProgress.getOrDefault(uuid, 0);
