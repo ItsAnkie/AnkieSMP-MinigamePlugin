@@ -1,0 +1,9 @@
+name: SurvivalChallengeSystem
+description: $description
+version: '${version}'
+
+main: com.rensjam.survivalChallengeSystem.SurvivalChallengeSystem
+api-version: '26.1.2'
+load: POSTWORLD
+
+authors: [ RensJAM ]

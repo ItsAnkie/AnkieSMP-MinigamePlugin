@@ -1,0 +1,28 @@
+ChallengeInterval: 30 # in Seconds
+AnnouncementsInterval: 10 # hoeveel seconden van te voren kondig je de challenge aan?
+
+challenges:
+  - name: kill_cow
+    type: kill_entity
+    entity: COW
+    amount: 3
+
+  - name: break_stone
+    type: break_block
+    entity: STONE
+    amount: 25
+
+  - name: fill_water_bottle
+    type: fill_item
+    entity: WATER_BOTTLE
+    amount: 1
+
+  - name: craft_cake
+    type: craft_item
+    entity: CAKE
+    amount: 1
+
+  - name: farm_wheat
+    type: farm_item
+    entity: WHEAT
+    amount: 20
