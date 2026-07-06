@@ -1,5 +1,6 @@
 package com.rensjam.AnkieSMP_MinigamePlugin;
 
+import io.papermc.paper.event.inventory.ItemCraftedEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -9,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerHarvestBlockEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -75,13 +77,23 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                                 activeChallenge.amount = (int) data.get("amount");
                                 break;
                             case "craft_item":
-                                //
+                                activeChallenge.name = (String) data.get("name");
+                                activeChallenge.type = (String) data.get("type");
+                                activeChallenge.item = Material.getMaterial((String) data.get("item"));
+                                activeChallenge.amount = (int) data.get("amount");
                                 break;
                             case "farm_item":
-                                //
+                                activeChallenge.name = (String) data.get("name");
+                                activeChallenge.type = (String) data.get("type");
+                                activeChallenge.block = Material.getMaterial((String) data.get("block"));
+                                activeChallenge.amount = (int) data.get("amount");
+                                Bukkit.broadcast(Component.text("FARMING!!!"));
                                 break;
                             case "fill_item":
-                                //
+                                activeChallenge.name = (String) data.get("name");
+                                activeChallenge.type = (String) data.get("type");
+                                activeChallenge.item = Material.getMaterial((String) data.get("item"));
+                                activeChallenge.amount = (int) data.get("amount");
                                 break;
                             default:
                                 Bukkit.broadcast(Component.text("Challenge type could not be loaded!"));
@@ -138,6 +150,46 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                             player.sendMessage("You have won the challenge");
                             activeChallenge = new Challenge();
                         }
+                    }
+                }
+            }
+        }
+
+        @EventHandler
+        public void onItemCraft(ItemCraftedEvent event) {
+            if (activeChallenge.type.equals("craft_item")) {
+                if (event.getCraftedItem().getType().equals(activeChallenge.item)) {
+                    Player player = event.getPlayer();
+                    UUID uuid = player.getUniqueId();
+                    int temp = totalProgress.getOrDefault(uuid, 0);
+                    temp++;
+                    totalProgress.put(uuid, temp);
+                    player.sendMessage(Component.text("You have crafted a total of: " + temp + " " + activeChallenge.item + " / " + activeChallenge.amount));
+                    if (temp == (activeChallenge.amount)) {
+                        temp = 0;
+                        totalProgress.clear();
+                        player.sendMessage("You have won the challenge");
+                        activeChallenge = new Challenge();
+                    }
+                }
+            }
+        }
+
+        @EventHandler
+        public void onCropHarvest(BlockBreakEvent event) {
+            if (activeChallenge.type.equals("farm_item")) {
+                if (event.getBlock().getBlockData().getMaterial().equals(activeChallenge.block)) {
+                    Player player = event.getPlayer();
+                    UUID uuid = player.getUniqueId();
+                    int temp = totalProgress.getOrDefault(uuid, 0);
+                    temp++;
+                    totalProgress.put(uuid, temp);
+                    player.sendMessage(Component.text("You have harvested a total of: " + temp + " " + activeChallenge.block + " / " + activeChallenge.amount));
+                    if (temp == (activeChallenge.amount)) {
+                        temp = 0;
+                        totalProgress.clear();
+                        player.sendMessage(("You have won the challenge"));
+                        activeChallenge = new Challenge();
                     }
                 }
             }

@@ -1,1 +1,1 @@
-rootProject.name = "SurvivalChallengeSystem"
+rootProject.name = "AnkieSMP_MinigamePlugin"
