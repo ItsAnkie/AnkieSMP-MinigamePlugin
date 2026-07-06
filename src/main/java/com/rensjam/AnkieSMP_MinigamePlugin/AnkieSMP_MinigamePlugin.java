@@ -61,10 +61,31 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
 
                         Map<String, Object> data = (Map<String, Object>) challenges.get(index);
 
-                        activeChallenge.name = (String) data.get("name");
-                        activeChallenge.type = (String) data.get("type");
-                        activeChallenge.entity = (String) data.get("entity");
-                        activeChallenge.amount = (int) data.get("amount");
+                        switch((String) data.get("type")) {
+                            case "break_block":
+                                activeChallenge.name = (String) data.get("name");
+                                activeChallenge.type = (String) data.get("type");
+                                activeChallenge.block = Material.getMaterial((String) data.get("block"));
+                                activeChallenge.amount = (int) data.get("amount");
+                                break;
+                            case "kill_entity":
+                                activeChallenge.name = (String) data.get("name");
+                                activeChallenge.type = (String) data.get("type");
+                                activeChallenge.entity = EntityType.valueOf(data.get("entity").toString().toUpperCase());
+                                activeChallenge.amount = (int) data.get("amount");
+                                break;
+                            case "craft_item":
+                                //
+                                break;
+                            case "farm_item":
+                                //
+                                break;
+                            case "fill_item":
+                                //
+                                break;
+                            default:
+                                Bukkit.broadcast(Component.text("Challenge type could not be loaded!"));
+                        }
 
                         Bukkit.broadcast(Component.text(String.valueOf(challenges.get(index))));
                         index++;
@@ -82,13 +103,13 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
         @EventHandler
         public void onBlockBreak(BlockBreakEvent event) {
             if (activeChallenge.type.equals("break_block")) {
-                if (event.getBlock().getBlockData().getMaterial().equals(Material.getMaterial(activeChallenge.entity))) {
+                if (event.getBlock().getBlockData().getMaterial().equals(activeChallenge.block)) {
                     Player player = event.getPlayer();
                     UUID uuid = player.getUniqueId();
                     int temp = totalProgress.getOrDefault(uuid, 0);
                     temp++;
                     totalProgress.put(uuid, temp);
-                    player.sendMessage(Component.text("You have broken a total of: " + temp + " " + activeChallenge.entity + " / " + activeChallenge.amount));
+                    player.sendMessage(Component.text("You have broken a total of: " + temp + " " + activeChallenge.block + " / " + activeChallenge.amount));
                     if (temp == (activeChallenge.amount)){
                         temp = 0;
                         totalProgress.clear();
@@ -102,7 +123,7 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
         @EventHandler
         public void onEntityDeath(EntityDeathEvent event) {
             if (activeChallenge.type.equals("kill_entity")) {
-                if (event.getEntity().getType().equals(EntityType.fromName(activeChallenge.entity))) {
+                if (event.getEntity().getType().equals(activeChallenge.entity)) {
                     if (event.getEntity().getKiller() != null)
                     {
                         Player player = event.getEntity().getKiller();
@@ -124,13 +145,24 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
     }
 
     static public class Challenge {
-        public String name, type, entity;
+
+        public String name;
+        public String type;
+
+        public EntityType entity;
+        public Material block;
+        public Material item;
+
         public int amount;
 
         public Challenge() {
             this.name = "";
             this.type = "";
-            this.entity = "";
+
+            this.entity = null;
+            this.block = null;
+            this.item = null;
+
             this.amount = 0;
         }
     }
