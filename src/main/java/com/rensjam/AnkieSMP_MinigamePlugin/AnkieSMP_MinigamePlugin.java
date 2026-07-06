@@ -1,4 +1,4 @@
-package com.rensjam.survivalChallengeSystem;
+package com.rensjam.AnkieSMP_MinigamePlugin;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -14,7 +14,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.*;
 
-public final class SurvivalChallengeSystem extends JavaPlugin {
+public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
 
     private final HashMap<UUID, Integer> totalProgress = new HashMap<>();
     Challenge activeChallenge = new Challenge();

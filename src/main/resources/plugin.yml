@@ -1,8 +1,8 @@
-name: SurvivalChallengeSystem
+name: AnkieSMP_MinigamePlugin
 description: $description
 version: '${version}'
 
-main: com.rensjam.survivalChallengeSystem.SurvivalChallengeSystem
+main: com.rensjam.AnkieSMP_MinigamePlugin.AnkieSMP_MinigamePlugin
 api-version: '26.1.2'
 load: POSTWORLD
 
