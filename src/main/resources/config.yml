@@ -30,5 +30,5 @@ challenges:
 
   - name: harvest_glow_berry
     type: farm_item
-    block: GLOW_BERRIES
+    block: CAVE_VINES_PLANT
     amount: 3

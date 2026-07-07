@@ -48,8 +48,7 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                     Bukkit.broadcast(Component.text("Er gaat een nieuwe challenge beginnen!"));
                     Bukkit.broadcast(Component.text("Wees voorbereid!"));
                     i = 0;
-                }
-                else if (v >= challengeInterval) {
+                } else if (v >= challengeInterval) {
                     activeChallenge = new Challenge();
                     totalProgress.clear();
                     Bukkit.broadcast(Component.text("Challenge is begonnen, succes!"));
@@ -62,40 +61,43 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                             Collections.shuffle(challenges);
 
                         Map<String, Object> data = (Map<String, Object>) challenges.get(index);
-
-                        switch((String) data.get("type")) {
-                            case "break_block":
-                                activeChallenge.name = (String) data.get("name");
-                                activeChallenge.type = (String) data.get("type");
-                                activeChallenge.block = Material.getMaterial((String) data.get("block"));
-                                activeChallenge.amount = (int) data.get("amount");
-                                break;
-                            case "kill_entity":
-                                activeChallenge.name = (String) data.get("name");
-                                activeChallenge.type = (String) data.get("type");
-                                activeChallenge.entity = EntityType.valueOf(data.get("entity").toString().toUpperCase());
-                                activeChallenge.amount = (int) data.get("amount");
-                                break;
-                            case "craft_item":
-                                activeChallenge.name = (String) data.get("name");
-                                activeChallenge.type = (String) data.get("type");
-                                activeChallenge.item = Material.getMaterial((String) data.get("item"));
-                                activeChallenge.amount = (int) data.get("amount");
-                                break;
-                            case "farm_item":
-                                activeChallenge.name = (String) data.get("name");
-                                activeChallenge.type = (String) data.get("type");
-                                activeChallenge.block = Material.getMaterial((String) data.get("block"));
-                                activeChallenge.amount = (int) data.get("amount");
-                                break;
-                            case "fill_item":
-                                activeChallenge.name = (String) data.get("name");
-                                activeChallenge.type = (String) data.get("type");
-                                activeChallenge.item = Material.getMaterial((String) data.get("item"));
-                                activeChallenge.amount = (int) data.get("amount");
-                                break;
-                            default:
-                                Bukkit.broadcast(Component.text("Challenge type could not be loaded!"));
+                        try {
+                            switch ((String) data.get("type")) {
+                                case "break_block":
+                                    activeChallenge.name = (String) data.get("name");
+                                    activeChallenge.type = (String) data.get("type");
+                                    activeChallenge.block = Material.getMaterial((String) data.get("block"));
+                                    activeChallenge.amount = (int) data.get("amount");
+                                    break;
+                                case "kill_entity":
+                                    activeChallenge.name = (String) data.get("name");
+                                    activeChallenge.type = (String) data.get("type");
+                                    activeChallenge.entity = EntityType.valueOf(data.get("entity").toString().toUpperCase());
+                                    activeChallenge.amount = (int) data.get("amount");
+                                    break;
+                                case "craft_item":
+                                    activeChallenge.name = (String) data.get("name");
+                                    activeChallenge.type = (String) data.get("type");
+                                    activeChallenge.item = Material.getMaterial((String) data.get("item"));
+                                    activeChallenge.amount = (int) data.get("amount");
+                                    break;
+                                case "farm_item":
+                                    activeChallenge.name = (String) data.get("name");
+                                    activeChallenge.type = (String) data.get("type");
+                                    activeChallenge.block = Material.getMaterial((String) data.get("block"));
+                                    activeChallenge.amount = (int) data.get("amount");
+                                    break;
+                                case "fill_item":
+                                    activeChallenge.name = (String) data.get("name");
+                                    activeChallenge.type = (String) data.get("type");
+                                    activeChallenge.item = Material.getMaterial((String) data.get("item"));
+                                    activeChallenge.amount = (int) data.get("amount");
+                                    break;
+                                default:
+                                    Bukkit.broadcast(Component.text("Challenge type could not be loaded!"));
+                            }
+                        } catch (Exception ex) {
+                            getLogger().warning("Failed to load challenge " + data.get("name") + ": " + ex.getMessage());
                         }
 
                         Bukkit.broadcast(Component.text(String.valueOf(challenges.get(index))));
@@ -113,88 +115,99 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
 
         @EventHandler
         public void onBlockBreak(BlockBreakEvent event) {
-            if (activeChallenge.type.equals("break_block")) {
-                if (event.getBlock().getBlockData().getMaterial().equals(activeChallenge.block)) {
-                    Player player = event.getPlayer();
-                    UUID uuid = player.getUniqueId();
-                    int temp = totalProgress.getOrDefault(uuid, 0);
-                    temp++;
-                    totalProgress.put(uuid, temp);
-                    player.sendMessage(Component.text("You have broken a total of: " + temp + " " + activeChallenge.block + " / " + activeChallenge.amount));
-                    if (temp == (activeChallenge.amount)){
-                        temp = 0;
-                        totalProgress.clear();
-                        player.sendMessage("You have won the challenge");
-                        activeChallenge = new Challenge();
-                    }
+            if (!activeChallenge.type.equals("break_block")) return;
+
+            if (event.getBlock().getType().equals(activeChallenge.block)) {
+                Player player = event.getPlayer();
+                UUID uuid = player.getUniqueId();
+                int temp = totalProgress.getOrDefault(uuid, 0);
+                temp++;
+                totalProgress.put(uuid, temp);
+                player.sendMessage(Component.text("You have broken a total of: " + temp + " " + activeChallenge.block + " / " + activeChallenge.amount));
+                if (temp == (activeChallenge.amount)) {
+                    temp = 0;
+                    totalProgress.clear();
+                    player.sendMessage("You have won the challenge");
+                    activeChallenge = new Challenge();
                 }
             }
         }
 
-        @EventHandler
-        public void onEntityDeath(EntityDeathEvent event) {
-            if (activeChallenge.type.equals("kill_entity")) {
-                if (event.getEntity().getType().equals(activeChallenge.entity)) {
-                    if (event.getEntity().getKiller() != null)
-                    {
-                        Player player = event.getEntity().getKiller();
-                        UUID uuid = player.getUniqueId();
-                        int temp = totalProgress.getOrDefault(uuid, 0);
-                        temp++;
-                        totalProgress.put(uuid, temp);
-                        player.sendMessage(Component.text("You have killed a total of: " + temp + " " + activeChallenge.entity + " / " + activeChallenge.amount));
-                        if (temp == (activeChallenge.amount)){
-                            temp = 0;
-                            totalProgress.clear();
-                            player.sendMessage("You have won the challenge");
-                            activeChallenge = new Challenge();
-                        }
-                    }
-                }
-            }
-        }
+    @EventHandler
+    public void onEntityDeath(EntityDeathEvent event) {
+        if (!activeChallenge.type.equals("kill_entity")) return;
 
-        @EventHandler
-        public void onItemCraft(ItemCraftedEvent event) {
-            if (activeChallenge.type.equals("craft_item")) {
-                if (event.getCraftedItem().getType().equals(activeChallenge.item)) {
-                    Player player = event.getPlayer();
-                    UUID uuid = player.getUniqueId();
-                    int temp = totalProgress.getOrDefault(uuid, 0);
-                    temp++;
-                    totalProgress.put(uuid, temp);
-                    player.sendMessage(Component.text("You have crafted a total of: " + temp + " " + activeChallenge.item + " / " + activeChallenge.amount));
-                    if (temp == (activeChallenge.amount)) {
-                        temp = 0;
-                        totalProgress.clear();
-                        player.sendMessage("You have won the challenge");
-                        activeChallenge = new Challenge();
-                    }
-                }
-            }
-        }
+        if (event.getEntity().getType().equals(activeChallenge.entity)) {
+            if (event.getEntity().getKiller() != null) {
+                Player player = event.getEntity().getKiller();
+                UUID uuid = player.getUniqueId();
+                int temp = totalProgress.getOrDefault(uuid, 0);
+                temp++;
+                totalProgress.put(uuid, temp);
+                player.sendMessage(Component.text("You have killed a total of: " + temp + " " + activeChallenge.entity + " / " + activeChallenge.amount));
+                if (temp == (activeChallenge.amount)) {
+                    temp = 0;
+                    totalProgress.clear();
+                    player.sendMessage("You have won the challenge");
+                    activeChallenge = new Challenge();
 
-        // Werkt nog niet idk why kut ding xD
-        @EventHandler
-        public void onCropHarvest(PlayerHarvestBlockEvent event) {
-            if (activeChallenge.type.equals("farm_item")) {
-                if (event.getHarvestedBlock().getBlockData().getMaterial().equals(activeChallenge.block)) {
-                    Player player = event.getPlayer();
-                    UUID uuid = player.getUniqueId();
-                    int temp = totalProgress.getOrDefault(uuid, 0);
-                    temp++;
-                    totalProgress.put(uuid, temp);
-                    player.sendMessage(Component.text("You have harvested a total of: " + temp + " " + activeChallenge.block + " / " + activeChallenge.amount));
-                    if (temp == (activeChallenge.amount)) {
-                        temp = 0;
-                        totalProgress.clear();
-                        player.sendMessage(("You have won the challenge"));
-                        activeChallenge = new Challenge();
-                    }
                 }
             }
         }
     }
+
+    @EventHandler
+    public void onItemCraft(ItemCraftedEvent event) {
+        if (!activeChallenge.type.equals("craft_item")) return;
+
+        if (event.getCraftedItem().getType().equals(activeChallenge.item)) {
+            Player player = event.getPlayer();
+            UUID uuid = player.getUniqueId();
+            int temp = totalProgress.getOrDefault(uuid, 0);
+            temp++;
+            totalProgress.put(uuid, temp);
+            player.sendMessage(Component.text("You have crafted a total of: " + temp + " " + activeChallenge.item + " / " + activeChallenge.amount));
+            if (temp == (activeChallenge.amount)) {
+                temp = 0;
+                totalProgress.clear();
+                player.sendMessage("You have won the challenge");
+                activeChallenge = new Challenge();
+
+            }
+        }
+    }
+
+    @EventHandler
+    public void onCropHarvest(PlayerHarvestBlockEvent event) {
+        if (!activeChallenge.type.equals("farm_item")) return;
+
+        Material target = activeChallenge.block;
+        Material harvested = event.getHarvestedBlock().getType();
+
+        boolean isCaveVineChallenge =
+            target == Material.CAVE_VINES || target == Material.CAVE_VINES_PLANT;
+        boolean isCaveVineBlock =
+            harvested == Material.CAVE_VINES || harvested == Material.CAVE_VINES_PLANT;
+
+        if (isCaveVineChallenge) {
+            if (!isCaveVineBlock) return;
+        } else if (harvested != target) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
+        int temp = totalProgress.getOrDefault(uuid, 0) + 1;
+        totalProgress.put(uuid, temp);
+        player.sendMessage(Component.text("You have harvested a total of: " + temp + " " + activeChallenge.block + " / " + activeChallenge.amount));
+        if (temp >= activeChallenge.amount) {
+            totalProgress.clear();
+            player.sendMessage(Component.text("You have won the challenge"));
+            activeChallenge = new Challenge();
+        }
+    }
+
+}
 
     static public class Challenge {
 
