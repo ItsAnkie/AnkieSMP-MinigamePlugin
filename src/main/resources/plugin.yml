@@ -7,3 +7,7 @@ api-version: '26.1.2'
 load: POSTWORLD
 
 authors: [ RensJAM ]
+
+commands:
+  ankieminigames:
+    permission: ankieminigames.reload

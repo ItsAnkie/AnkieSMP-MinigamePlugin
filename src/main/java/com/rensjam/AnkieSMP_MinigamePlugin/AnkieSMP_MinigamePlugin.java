@@ -7,6 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.type.CaveVines;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,6 +21,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
@@ -27,100 +30,115 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
     private final HashMap<UUID, Integer> totalProgress = new HashMap<>();
     Challenge activeChallenge = new Challenge();
 
+    private BukkitTask challengeTask;
+    private List<?> challenges;
+
     int i = 0;
     int v = 0;
     int index = 0;
 
-    @Override
-    public void onEnable() {
-        getServer().getPluginManager().registerEvents(new ChallengeListener(), this);
+    private void loadPlugin() {
 
-        saveDefaultConfig();
+        reloadConfig();
 
         int _announcementsInterval = getConfig().getInt("AnnouncementsInterval");
         int challengeInterval = getConfig().getInt("ChallengeInterval");
-
         int announcementsInterval = challengeInterval - _announcementsInterval;
 
-        List<?> challenges = getConfig().getList("challenges");
+        challenges = getConfig().getList("challenges");
+        if (challengeTask != null) {
+            challengeTask.cancel();
+        }
 
-        BukkitScheduler scheduler = this.getServer().getScheduler();
-        scheduler.scheduleSyncRepeatingTask(this, new Runnable() {
-            @Override
-            public void run() {
-                i++;
-                v++;
-                if (i >= announcementsInterval) {
-                    Bukkit.broadcast(Component.text("Er gaat een nieuwe challenge beginnen!"));
-                    Bukkit.broadcast(Component.text("Wees voorbereid!"));
-                    i = 0;
-                } else if (v >= challengeInterval) {
-                    activeChallenge = new Challenge();
-                    totalProgress.clear();
-                    Bukkit.broadcast(Component.text("Challenge is begonnen, succes!"));
-                    Bukkit.broadcast(Component.text("De gekozen challenge is!: "));
+        totalProgress.clear();
+        activeChallenge = new Challenge();
+        i = 0;
+        v = 0;
+        index = 0;
 
-                    if (challenges != null) {
-                        if (index == challenges.size())
-                            index = 0;
-                        if (index == 0)
-                            Collections.shuffle(challenges);
+        challengeTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
+            i++;
+            v++;
 
-                        Map<String, Object> data = (Map<String, Object>) challenges.get(index);
-                        try {
-                            switch ((String) data.get("type")) {
-                                case "break_block":
-                                    activeChallenge.name = (String) data.get("name");
-                                    activeChallenge.type = (String) data.get("type");
-                                    activeChallenge.block = Material.getMaterial((String) data.get("block"));
-                                    activeChallenge.amount = (int) data.get("amount");
-                                    activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
-                                    break;
-                                case "kill_entity":
-                                    activeChallenge.name = (String) data.get("name");
-                                    activeChallenge.type = (String) data.get("type");
-                                    activeChallenge.entity = EntityType.valueOf(data.get("entity").toString().toUpperCase());
-                                    activeChallenge.amount = (int) data.get("amount");
-                                    activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
-                                    break;
-                                case "craft_item":
-                                    activeChallenge.name = (String) data.get("name");
-                                    activeChallenge.type = (String) data.get("type");
-                                    activeChallenge.item = Material.getMaterial((String) data.get("item"));
-                                    activeChallenge.amount = (int) data.get("amount");
-                                    activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
-                                    break;
-                                case "farm_item":
-                                    activeChallenge.name = (String) data.get("name");
-                                    activeChallenge.type = (String) data.get("type");
-                                    activeChallenge.block = Material.getMaterial((String) data.get("block"));
-                                    activeChallenge.amount = (int) data.get("amount");
-                                    activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
-                                    break;
-                                case "interaction":
-                                    Bukkit.broadcast(Component.text("Interaction"));
-                                    activeChallenge.name = (String) data.get("name");
-                                    activeChallenge.type = (String) data.get("type");
-                                    activeChallenge.item = Material.getMaterial((String) data.get("item"));
-                                    activeChallenge.amount = (int) data.get("amount");
-                                    activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
-                                    break;
-                                default:
-                                    Bukkit.broadcast(Component.text("Challenge type could not be loaded!"));
-                            }
-                        } catch (Exception ex) {
-                            getLogger().warning("Failed to load challenge " + data.get("name") + ": " + ex.getMessage());
-                        }
+            if (i >= announcementsInterval) {
+                Bukkit.broadcast(Component.text("Er gaat een nieuwe challenge beginnen!"));
+                Bukkit.broadcast(Component.text("Wees voorbereid!"));
+                i = 0;
+            } else if (v >= challengeInterval) {
+                activeChallenge = new Challenge();
+                totalProgress.clear();
+                Bukkit.broadcast(Component.text("Challenge is begonnen, succes!"));
+                Bukkit.broadcast(Component.text("De gekozen challenge is!: "));
 
-                        Bukkit.broadcast(Component.text(String.valueOf(challenges.get(index))));
-                        index++;
+                if (challenges == null)
+                    return;
+                if (index >= challenges.size())
+                    index = 0;
+                if (index == 0)
+                    Collections.shuffle(challenges);
 
-                        i = 0;
-                        v = 0;
+                Map<String, Object> data = (Map<String, Object>) challenges.get(index);
+
+                try {
+                    switch ((String) data.get("type")) {
+
+                        case "break_block":
+                            activeChallenge.name = (String) data.get("name");
+                            activeChallenge.type = (String) data.get("type");
+                            activeChallenge.block = Material.getMaterial((String) data.get("block"));
+                            activeChallenge.amount = (int) data.get("amount");
+                            activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
+                            break;
+                        case "kill_entity":
+                            activeChallenge.name = (String) data.get("name");
+                            activeChallenge.type = (String) data.get("type");
+                            activeChallenge.entity = EntityType.valueOf(data.get("entity").toString());
+                            activeChallenge.amount = (int) data.get("amount");
+                            activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
+                            break;
+                        case "craft_item":
+                            activeChallenge.name = (String) data.get("name");
+                            activeChallenge.type = (String) data.get("type");
+                            activeChallenge.item = Material.getMaterial((String) data.get("item"));
+                            activeChallenge.amount = (int) data.get("amount");
+                            activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
+                            break;
+                        case "farm_item":
+                            activeChallenge.name = (String) data.get("name");
+                            activeChallenge.type = (String) data.get("type");
+                            activeChallenge.block = Material.getMaterial((String) data.get("block"));
+                            activeChallenge.amount = (int) data.get("amount");
+                            activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
+                            break;
+                        case "interaction":
+                            activeChallenge.name = (String) data.get("name");
+                            activeChallenge.type = (String) data.get("type");
+                            activeChallenge.item = Material.getMaterial((String) data.get("item"));
+                            activeChallenge.amount = (int) data.get("amount");
+                            activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
+                            break;
                     }
+                } catch (Exception ex) {
+                    getLogger().warning("Failed to load challenge " + data.get("name") + ": " + ex.getMessage());
                 }
+
+                Bukkit.broadcast(Component.text(String.valueOf(challenges.get(index))));
+                index++;
+
+                i = 0;
+                v = 0;
             }
+
         }, 0L, 20L);
+    }
+
+    @Override
+    public void onEnable() {
+        saveDefaultConfig();
+        getServer().getPluginManager().registerEvents(new ChallengeListener(), this);
+        loadPlugin();
+
+        Objects.requireNonNull(getCommand("ankieminigames")).setExecutor(this);
     }
 
     public class ChallengeListener implements Listener {
@@ -312,7 +330,20 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
             this.item = null;
 
             this.amount = 0;
+            this.claimBlockAmount = 0;
         }
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
+            loadPlugin();
+            sender.sendMessage(Component.text("§aAnkieMinigames succesvol herladen!"));
+            return true;
+        }
+
+        sender.sendMessage(Component.text("Gebruik: /ankieminigames reload"));
+        return true;
     }
 
     @Override
