@@ -14,7 +14,7 @@ challenges:
     amount: 25
 
   - name: fill_water_bottle
-    type: fill_item
+    type: interaction
     item: GLASS_BOTTLE
     amount: 1
 
@@ -24,7 +24,7 @@ challenges:
     amount: 1
 
   - name: farm_wheat
-    type: break_block
+    type: farm_item
     block: WHEAT
     amount: 20
 

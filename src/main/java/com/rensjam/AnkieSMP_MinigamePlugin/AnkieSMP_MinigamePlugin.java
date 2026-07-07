@@ -4,13 +4,19 @@ import io.papermc.paper.event.inventory.ItemCraftedEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.Ageable;
+import org.bukkit.block.data.type.CaveVines;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerHarvestBlockEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -87,7 +93,8 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                                     activeChallenge.block = Material.getMaterial((String) data.get("block"));
                                     activeChallenge.amount = (int) data.get("amount");
                                     break;
-                                case "fill_item":
+                                case "interaction":
+                                    Bukkit.broadcast(Component.text("Interaction"));
                                     activeChallenge.name = (String) data.get("name");
                                     activeChallenge.type = (String) data.get("type");
                                     activeChallenge.item = Material.getMaterial((String) data.get("item"));
@@ -115,7 +122,8 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
 
         @EventHandler
         public void onBlockBreak(BlockBreakEvent event) {
-            if (!activeChallenge.type.equals("break_block")) return;
+            if (!activeChallenge.type.equals("break_block"))
+                return;
 
             if (event.getBlock().getType().equals(activeChallenge.block)) {
                 Player player = event.getPlayer();
@@ -135,7 +143,8 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
 
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event) {
-        if (!activeChallenge.type.equals("kill_entity")) return;
+        if (!activeChallenge.type.equals("kill_entity"))
+            return;
 
         if (event.getEntity().getType().equals(activeChallenge.entity)) {
             if (event.getEntity().getKiller() != null) {
@@ -158,7 +167,8 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
 
     @EventHandler
     public void onItemCraft(ItemCraftedEvent event) {
-        if (!activeChallenge.type.equals("craft_item")) return;
+        if (!activeChallenge.type.equals("craft_item"))
+            return;
 
         if (event.getCraftedItem().getType().equals(activeChallenge.item)) {
             Player player = event.getPlayer();
@@ -179,31 +189,91 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
 
     @EventHandler
     public void onCropHarvest(PlayerHarvestBlockEvent event) {
-        if (!activeChallenge.type.equals("farm_item")) return;
-
-        Material target = activeChallenge.block;
-        Material harvested = event.getHarvestedBlock().getType();
-
-        boolean isCaveVineChallenge =
-            target == Material.CAVE_VINES || target == Material.CAVE_VINES_PLANT;
-        boolean isCaveVineBlock =
-            harvested == Material.CAVE_VINES || harvested == Material.CAVE_VINES_PLANT;
-
-        if (isCaveVineChallenge) {
-            if (!isCaveVineBlock) return;
-        } else if (harvested != target) {
+        if (!activeChallenge.type.equals("farm_item"))
             return;
+
+        Block block = event.getHarvestedBlock();
+
+        if (block.getType() != activeChallenge.block)
+            return;
+
+        if (block.getBlockData() instanceof CaveVines vines) {
+            if (!vines.hasBerries())
+                return;
         }
 
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
-        int temp = totalProgress.getOrDefault(uuid, 0) + 1;
+        int temp = totalProgress.getOrDefault(uuid, 0);
+        temp++;
         totalProgress.put(uuid, temp);
         player.sendMessage(Component.text("You have harvested a total of: " + temp + " " + activeChallenge.block + " / " + activeChallenge.amount));
         if (temp >= activeChallenge.amount) {
+            temp = 0;
             totalProgress.clear();
             player.sendMessage(Component.text("You have won the challenge"));
             activeChallenge = new Challenge();
+        }
+    }
+
+    @EventHandler
+    public void onCropBreak(BlockBreakEvent event) {
+        if (!activeChallenge.type.equals("farm_item"))
+            return;
+        Block block = event.getBlock();
+        if (block.getType() != activeChallenge.block)
+            return;
+        if (!(block.getBlockData() instanceof Ageable ageable))
+            return;
+        if (ageable.getAge() != ageable.getMaximumAge())
+            return;
+
+        Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
+        int temp = totalProgress.getOrDefault(uuid, 0);
+        temp++;
+        totalProgress.put(uuid, temp);
+        player.sendMessage(Component.text("You have harvested a total of: " + temp + " " + activeChallenge.block + " / " + activeChallenge.amount));
+        if (temp >= activeChallenge.amount) {
+            temp = 0;
+            totalProgress.clear();
+            player.sendMessage(Component.text("You have won the challenge"));
+            activeChallenge = new Challenge();
+        }
+    }
+
+    @EventHandler
+    public void onBottleFill(PlayerInteractEvent event) {
+        if (event.getHand() != EquipmentSlot.HAND)
+            return;
+        if (!activeChallenge.type.equals("interaction"))
+            return;
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
+            return;
+        if (event.getItem() == null || event.getItem().getType() != activeChallenge.item)
+            return;
+
+        Block clickedBlock = event.getClickedBlock();
+        if (clickedBlock == null)
+            return;
+        Block waterBlock = clickedBlock.getRelative(event.getBlockFace());
+        Bukkit.broadcast(Component.text("Clicked: " + clickedBlock.getType()));
+        Bukkit.broadcast(Component.text("Relative: " + waterBlock.getType()));
+
+        if (waterBlock.getType() == Material.WATER || clickedBlock.getType() == Material.CAULDRON) {
+            Bukkit.broadcast(Component.text("BLOCK IS WATER"));
+            Player player = event.getPlayer();
+            UUID uuid = player.getUniqueId();
+            int temp = totalProgress.getOrDefault(uuid, 0);
+            temp++;
+            totalProgress.put(uuid, temp);
+            player.sendMessage(Component.text("You have filled a total of: " + temp + " " + activeChallenge.item + " / " + activeChallenge.amount));
+            if (temp >= activeChallenge.amount) {
+                temp = 0;
+                totalProgress.clear();
+                player.sendMessage(Component.text("You have won the challenge"));
+                activeChallenge = new Challenge();
+            }
         }
     }
 
