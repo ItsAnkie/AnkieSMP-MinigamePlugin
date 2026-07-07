@@ -74,24 +74,28 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                                     activeChallenge.type = (String) data.get("type");
                                     activeChallenge.block = Material.getMaterial((String) data.get("block"));
                                     activeChallenge.amount = (int) data.get("amount");
+                                    activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
                                     break;
                                 case "kill_entity":
                                     activeChallenge.name = (String) data.get("name");
                                     activeChallenge.type = (String) data.get("type");
                                     activeChallenge.entity = EntityType.valueOf(data.get("entity").toString().toUpperCase());
                                     activeChallenge.amount = (int) data.get("amount");
+                                    activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
                                     break;
                                 case "craft_item":
                                     activeChallenge.name = (String) data.get("name");
                                     activeChallenge.type = (String) data.get("type");
                                     activeChallenge.item = Material.getMaterial((String) data.get("item"));
                                     activeChallenge.amount = (int) data.get("amount");
+                                    activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
                                     break;
                                 case "farm_item":
                                     activeChallenge.name = (String) data.get("name");
                                     activeChallenge.type = (String) data.get("type");
                                     activeChallenge.block = Material.getMaterial((String) data.get("block"));
                                     activeChallenge.amount = (int) data.get("amount");
+                                    activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
                                     break;
                                 case "interaction":
                                     Bukkit.broadcast(Component.text("Interaction"));
@@ -99,6 +103,7 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                                     activeChallenge.type = (String) data.get("type");
                                     activeChallenge.item = Material.getMaterial((String) data.get("item"));
                                     activeChallenge.amount = (int) data.get("amount");
+                                    activeChallenge.claimBlockAmount = (int) data.get("claim_block_reward");
                                     break;
                                 default:
                                     Bukkit.broadcast(Component.text("Challenge type could not be loaded!"));
@@ -136,6 +141,7 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                     temp = 0;
                     totalProgress.clear();
                     player.sendMessage("You have won the challenge");
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "adjustbonusclaimblocks " + player.getName() + " " + activeChallenge.claimBlockAmount);
                     activeChallenge = new Challenge();
                 }
             }
@@ -158,6 +164,7 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                     temp = 0;
                     totalProgress.clear();
                     player.sendMessage("You have won the challenge");
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "adjustbonusclaimblocks " + player.getName() + " " + activeChallenge.claimBlockAmount);
                     activeChallenge = new Challenge();
 
                 }
@@ -181,6 +188,7 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                 temp = 0;
                 totalProgress.clear();
                 player.sendMessage("You have won the challenge");
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "adjustbonusclaimblocks " + player.getName() + " " + activeChallenge.claimBlockAmount);
                 activeChallenge = new Challenge();
 
             }
@@ -212,6 +220,7 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
             temp = 0;
             totalProgress.clear();
             player.sendMessage(Component.text("You have won the challenge"));
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "adjustbonusclaimblocks " + player.getName() + " " + activeChallenge.claimBlockAmount);
             activeChallenge = new Challenge();
         }
     }
@@ -238,6 +247,7 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
             temp = 0;
             totalProgress.clear();
             player.sendMessage(Component.text("You have won the challenge"));
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "adjustbonusclaimblocks " + player.getName() + " " + activeChallenge.claimBlockAmount);
             activeChallenge = new Challenge();
         }
     }
@@ -272,6 +282,7 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
                 temp = 0;
                 totalProgress.clear();
                 player.sendMessage(Component.text("You have won the challenge"));
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "adjustbonusclaimblocks " + player.getName() + " " + activeChallenge.claimBlockAmount);
                 activeChallenge = new Challenge();
             }
         }
@@ -289,6 +300,8 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
         public Material item;
 
         public int amount;
+
+        public int claimBlockAmount;
 
         public Challenge() {
             this.name = "";

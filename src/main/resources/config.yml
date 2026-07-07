@@ -7,28 +7,34 @@ challenges:
     type: kill_entity
     entity: COW
     amount: 3
+    claim_block_reward: 5
 
   - name: break_stone
     type: break_block
     block: STONE
     amount: 25
+    claim_block_reward: 5
 
   - name: fill_water_bottle
     type: interaction
     item: GLASS_BOTTLE
     amount: 1
+    claim_block_reward: 5
 
   - name: craft_cake
     type: craft_item
     item: CAKE
     amount: 1
+    claim_block_reward: 5
 
   - name: farm_wheat
     type: farm_item
     block: WHEAT
     amount: 20
+    claim_block_reward: 5
 
-  - name: harvest_glow_berry
+  - name: Harvest 3 Glow Berries
     type: farm_item
     block: CAVE_VINES_PLANT
     amount: 3
+    claim_block_reward: 5
