@@ -65,6 +65,14 @@ public final class MinigameManager {
         }
     }
 
+    public void initialize(@NonNull FileConfiguration config) {
+        this.loadGames(config);
+        this.startScheduler(
+                config.getInt("challengeIntervalSeconds", config.getInt("ChallengeInterval", 30)),
+                config.getInt("announcementLeadTimeSeconds", config.getInt("AnnouncementsInterval", 10))
+        );
+    }
+
     public void startScheduler(int challengeIntervalSeconds, int announcementLeadTimeSeconds) {
         this.challengeIntervalSeconds = Math.max(1, challengeIntervalSeconds);
         this.announcementLeadTimeSeconds = Math.max(0, announcementLeadTimeSeconds);
@@ -167,9 +175,11 @@ public final class MinigameManager {
 
         this.progressByPlayer.clear();
         this.activeGame = this.registry.activate(nextGame);
+        MinigameDefinition<?> activeDefinition = this.activeGame.definition();
 
-        Bukkit.broadcast(Component.text("Minigame gestart: " + nextGame.displayName()));
-        Bukkit.broadcast(Component.text("Doel: " + nextGame.amount() + " | Reward: " + nextGame.reward()));
+        Bukkit.broadcast(Component.text("Minigame gestart: " + activeDefinition.displayName()));
+        Bukkit.broadcast(this.describeObjective(this.activeGame));
+        Bukkit.broadcast(Component.text("Reward: " + activeDefinition.reward()));
     }
 
     private MinigameDefinition<?> nextRotationGame() {
@@ -180,5 +190,9 @@ public final class MinigameManager {
         }
 
         return this.rotationQueue.pollFirst();
+    }
+
+    private <T> @NonNull Component describeObjective(@NonNull ActiveMinigame<T> activeMinigame) {
+        return Component.text("Doel: ").append(activeMinigame.type().describeObjective(activeMinigame.definition()));
     }
 }

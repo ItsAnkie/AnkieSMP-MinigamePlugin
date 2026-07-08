@@ -73,6 +73,6 @@ public final class MinigameRegistry {
         MinigameType<T> type = (MinigameType<T>) rawType;
         @SuppressWarnings("unchecked")
         MinigameDefinition<T> definition = (MinigameDefinition<T>) rawDefinition;
-        return new ActiveMinigame<>(definition, type);
+        return new ActiveMinigame<>(type.activate(definition), type);
     }
 }

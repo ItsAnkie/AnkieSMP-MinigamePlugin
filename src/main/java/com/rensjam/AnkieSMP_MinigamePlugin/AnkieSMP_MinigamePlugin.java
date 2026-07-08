@@ -6,6 +6,7 @@ import com.rensjam.AnkieSMP_MinigamePlugin.minigame.core.MinigameRegistry;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.core.MinigameType;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.core.RewardService;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.type.BreakBlockMinigame;
+import com.rensjam.AnkieSMP_MinigamePlugin.minigame.type.ChatWordMinigame;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.type.FarmItemMinigame;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.type.CraftItemMinigame;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.type.KillEntityMinigame;
@@ -32,26 +33,15 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
         RewardService rewardService = new RewardService(this, rewardCommand);
         this.minigameManager = new MinigameManager(this, registry, rewardService);
 
-        Objects.requireNonNull(getCommand("ankieminigames")).setExecutor(new ReloadCommand(this.minigameManager, this.getConfig()));
+        Objects.requireNonNull(this.getCommand("ankieminigames")).setExecutor(new ReloadCommand(this, this.minigameManager));
 
         registerType(registry, new BreakBlockMinigame(this.minigameManager));
         registerType(registry, new KillEntityMinigame(this.minigameManager));
         registerType(registry, new CraftItemMinigame(this.minigameManager));
         registerType(registry, new FarmItemMinigame(this.minigameManager));
         registerType(registry, new InteractionMinigame(this.minigameManager));
-
-        this.minigameManager.loadGames(this.getConfig());
-
-        int challengeIntervalSeconds = this.getConfig().getInt(
-                "challengeIntervalSeconds",
-                this.getConfig().getInt("ChallengeInterval", 30)
-        );
-        int announcementLeadTimeSeconds = this.getConfig().getInt(
-                "announcementLeadTimeSeconds",
-                this.getConfig().getInt("AnnouncementsInterval", 10)
-        );
-
-        this.minigameManager.startScheduler(challengeIntervalSeconds, announcementLeadTimeSeconds);
+        registerType(registry, new ChatWordMinigame(this, this.minigameManager));
+        this.minigameManager.initialize(this.getConfig());
     }
 
     private void registerType(@NonNull MinigameRegistry registry, MinigameType<?> type) {

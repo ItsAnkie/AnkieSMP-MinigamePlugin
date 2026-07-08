@@ -50,3 +50,17 @@ games:
     reward: 5
     settings:
       block: CAVE_VINES_PLANT
+
+  - id: type_the_word
+    type: chat_word
+    display_name: Type the word
+    amount: 1
+    reward: 5
+    settings:
+      ignore_case: true
+      trim_input: true
+      words:
+        - diamant
+        - creeper
+        - nether
+        - minecraft
