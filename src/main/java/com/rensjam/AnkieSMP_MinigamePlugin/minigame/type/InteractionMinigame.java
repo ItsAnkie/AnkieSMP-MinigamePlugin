@@ -1,14 +1,22 @@
 package com.rensjam.AnkieSMP_MinigamePlugin.minigame.type;
 
+import com.rensjam.AnkieSMP_MinigamePlugin.AnkieSMP_MinigamePlugin;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.core.MinigameDefinition;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.core.MinigameManager;
+import org.bukkit.Bukkit;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionType;
+import org.bukkit.util.RayTraceResult;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NonNull;
 
@@ -41,27 +49,15 @@ public final class InteractionMinigame extends AbstractMaterialMinigame<Interact
     }
 
     @EventHandler
-    public void onInteract(@NonNull PlayerInteractEvent event) {
-        if (event.getHand() != EquipmentSlot.HAND || event.getAction() != Action.RIGHT_CLICK_BLOCK) {
-            return;
-        }
+    public void onInteract(@NonNull PlayerBucketFillEvent event) {
+       this.manager.<Settings>getActiveDefinition(this.key()).ifPresent(definition -> {
+            ItemStack item = event.getItemStack();
 
-        this.manager.<Settings>getActiveDefinition(this.key()).ifPresent(definition -> {
-            if (event.getItem() == null ||
-                    event.getItem().getType() != definition.settings().item()) {
+            if (item.getType() != definition.settings().item()) {
                 return;
             }
 
-            Block clickedBlock = event.getClickedBlock();
-
-            if (clickedBlock == null) {
-                return;
-            }
-
-            Block relativeBlock = clickedBlock.getRelative(event.getBlockFace());
-            if (clickedBlock.getType() == Material.WATER
-                    || relativeBlock.getType() == Material.WATER
-                    || clickedBlock.getType() == Material.WATER_CAULDRON) {
+            if (event.getBlock().getType() == Material.WATER) {
                 this.manager.incrementProgress(event.getPlayer(), 1);
             }
         });

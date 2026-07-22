@@ -19,13 +19,13 @@ games:
     settings:
       block: STONE
 
-  - id: fill_water_bottle
+  - id: fill_water_bucket
     type: interaction
-    display_name: Fill 1 water bottle
+    display_name: Fill 1 water bucket
     amount: 1
     reward: 5
     settings:
-      item: GLASS_BOTTLE
+      item: WATER_BUCKET
 
   - id: craft_cake
     type: craft_item
