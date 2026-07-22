@@ -1,40 +1,66 @@
-ChallengeInterval: 30 # in Seconds
-AnnouncementsInterval: 10 # hoeveel seconden van te voren kondig je de challenge aan?
+challengeIntervalSeconds: 30
+announcementLeadTimeSeconds: 10
+rewardCommand: "adjustbonusclaimblocks {player} {reward}"
 
-challenges:
-
-  - name: kill_cow
+games:
+  - id: kill_cow
     type: kill_entity
-    entity: COW
+    display_name: Kill 3 cows
     amount: 3
-    claim_block_reward: 5
+    reward: 5
+    settings:
+      entity: COW
 
-  - name: break_stone
+  - id: break_stone
     type: break_block
-    block: STONE
+    display_name: Break 25 stone
     amount: 25
-    claim_block_reward: 5
+    reward: 5
+    settings:
+      block: STONE
 
-  - name: fill_water_bottle
+  - id: fill_water_bucket
     type: interaction
-    item: GLASS_BOTTLE
+    display_name: Fill 1 water bucket
     amount: 1
-    claim_block_reward: 5
+    reward: 5
+    settings:
+      item: WATER_BUCKET
 
-  - name: craft_cake
+  - id: craft_cake
     type: craft_item
-    item: CAKE
+    display_name: Craft a cake
     amount: 1
-    claim_block_reward: 5
+    reward: 5
+    settings:
+      item: CAKE
 
-  - name: farm_wheat
+  - id: farm_wheat
     type: farm_item
-    block: WHEAT
+    display_name: Harvest 20 wheat
     amount: 20
-    claim_block_reward: 5
+    reward: 5
+    settings:
+      block: WHEAT
 
-  - name: Harvest 3 Glow Berries
+  - id: harvest_glow_berries
     type: farm_item
-    block: CAVE_VINES_PLANT
+    display_name: Harvest 3 glow berries
     amount: 3
-    claim_block_reward: 5
+    reward: 5
+    settings:
+      block: CAVE_VINES_PLANT
+
+  - id: type_the_word
+    type: chat_word
+    display_name: Type the word
+    amount: 1
+    reward: 5
+    settings:
+      ignore_case: true
+      trim_input: true
+      words:
+        - diamant
+        - creeper
+        - nether
+        - minecraft
