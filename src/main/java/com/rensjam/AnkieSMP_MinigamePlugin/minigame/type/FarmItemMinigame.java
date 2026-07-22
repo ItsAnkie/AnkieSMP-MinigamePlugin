@@ -44,7 +44,8 @@ public final class FarmItemMinigame extends AbstractMaterialMinigame<FarmItemMin
     public void onCropHarvest(PlayerHarvestBlockEvent event) {
         this.manager.<Settings>getActiveDefinition(key()).ifPresent(definition -> {
             Block block = event.getHarvestedBlock();
-            if (block.getType() != definition.settings().block()) {
+            if (block.getType() != Material.CAVE_VINES
+                    && block.getType() != Material.CAVE_VINES_PLANT) {
                 return;
             }
 
