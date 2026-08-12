@@ -1,6 +1,9 @@
 package com.rensjam.AnkieSMP_MinigamePlugin.minigame.core;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -21,16 +24,31 @@ import java.util.UUID;
 
 public final class MinigameManager {
 
+    private static final TextColor DARK_PURPLE = NamedTextColor.DARK_PURPLE;
+    private static final TextColor LIGHT_PURPLE = NamedTextColor.LIGHT_PURPLE;
+    private static final TextColor AQUA = NamedTextColor.AQUA;
+    private static final TextColor MUTED_GRAY = TextColor.color(163, 163, 178);
+    private static final TextColor WHITE = NamedTextColor.WHITE;
+
+    private static Component prefix() {
+        return Component.text("[", DARK_PURPLE)
+                .append(Component.text("AnkieSMP ", DARK_PURPLE).decorate(TextDecoration.BOLD))
+                .append(Component.text("Minigames", LIGHT_PURPLE).decorate(TextDecoration.BOLD))
+                .append(Component.text("] ", DARK_PURPLE));
+    }
+
     private final JavaPlugin plugin;
     private final MinigameRegistry registry;
     private final RewardService rewardService;
     private final Random random = new Random();
+
     private final Map<UUID, Integer> progressByPlayer = new HashMap<>();
     private final List<MinigameDefinition<?>> configuredGames = new ArrayList<>();
     private final Deque<MinigameDefinition<?>> rotationQueue = new ArrayDeque<>();
 
     private ActiveMinigame<?> activeGame;
     private BukkitTask schedulerTask;
+
     private int challengeIntervalSeconds;
     private int announcementLeadTimeSeconds;
     private int countdownSeconds;
@@ -48,6 +66,7 @@ public final class MinigameManager {
         this.progressByPlayer.clear();
 
         List<Map<?, ?>> rawGames = config.getMapList("games");
+
         if (rawGames.isEmpty()) {
             rawGames = config.getMapList("challenges");
         }
@@ -76,8 +95,11 @@ public final class MinigameManager {
     public void startScheduler(int challengeIntervalSeconds, int announcementLeadTimeSeconds) {
         this.challengeIntervalSeconds = Math.max(1, challengeIntervalSeconds);
         this.announcementLeadTimeSeconds = Math.max(0, announcementLeadTimeSeconds);
+
         if (this.announcementLeadTimeSeconds >= this.challengeIntervalSeconds) {
-            this.plugin.getLogger().warning("announcementLeadTimeSeconds must be lower than challengeIntervalSeconds. Clamping value.");
+            this.plugin.getLogger().warning(
+                    "announcementLeadTimeSeconds must be lower than challengeIntervalSeconds. Clamping value."
+            );
             this.announcementLeadTimeSeconds = Math.max(0, this.challengeIntervalSeconds - 1);
         }
 
@@ -108,6 +130,7 @@ public final class MinigameManager {
 
         @SuppressWarnings("unchecked")
         MinigameDefinition<T> definition = (MinigameDefinition<T>) this.activeGame.definition();
+
         return Optional.of(definition);
     }
 
@@ -118,11 +141,14 @@ public final class MinigameManager {
 
         MinigameDefinition<?> definition = this.activeGame.definition();
         int newProgress = this.progressByPlayer.getOrDefault(player.getUniqueId(), 0) + amount;
+
         this.progressByPlayer.put(player.getUniqueId(), newProgress);
 
-        player.sendMessage(Component.text(
-                "Voortgang voor " + definition.displayName() + ": " + newProgress + " / " + definition.amount()
-        ));
+        player.sendActionBar(
+                Component.text("▍", DARK_PURPLE)
+                        .append(Component.text(" Voortgang ", MUTED_GRAY))
+                        .append(Component.text(newProgress + "/" + definition.amount(), AQUA).decorate(TextDecoration.BOLD))
+        );
 
         if (newProgress >= definition.amount()) {
             this.completeFor(player);
@@ -135,11 +161,16 @@ public final class MinigameManager {
         }
 
         MinigameDefinition<?> completedGame = this.activeGame.definition();
-        Bukkit.broadcast(Component.text(
-                player.getName() + " heeft de minigame gewonnen: " + completedGame.displayName() + "!"
-        ));
+
+        Bukkit.broadcast(
+                prefix()
+                        .append(Component.text(player.getName(), LIGHT_PURPLE).decorate(TextDecoration.BOLD))
+                        .append(Component.text(" won ", MUTED_GRAY))
+                        .append(Component.text(completedGame.displayName(), WHITE).decorate(TextDecoration.BOLD))
+        );
 
         this.rewardService.grantReward(player, completedGame.reward());
+
         this.progressByPlayer.clear();
         this.activeGame = null;
     }
@@ -150,8 +181,13 @@ public final class MinigameManager {
         }
 
         this.countdownSeconds--;
+
         if (this.announcementLeadTimeSeconds > 0 && this.countdownSeconds == this.announcementLeadTimeSeconds) {
-            Bukkit.broadcast(Component.text("Er gaat zo een nieuwe minigame beginnen. Maak je klaar."));
+            Bukkit.broadcast(
+                    prefix()
+                            .append(Component.text("Nieuwe minigame over ", MUTED_GRAY))
+                            .append(Component.text(this.announcementLeadTimeSeconds + "s", AQUA).decorate(TextDecoration.BOLD))
+            );
         }
 
         if (this.countdownSeconds > 0) {
@@ -164,22 +200,31 @@ public final class MinigameManager {
 
     private void startNextGame() {
         MinigameDefinition<?> nextGame = nextRotationGame();
+
         if (nextGame == null) {
             this.plugin.getLogger().warning("Unable to start a minigame because none are configured.");
             return;
         }
 
         if (this.activeGame != null) {
-            Bukkit.broadcast(Component.text("De vorige minigame is afgelopen zonder winnaar."));
+            Bukkit.broadcast(
+                    prefix().append(Component.text("Niemand won de vorige ronde.", MUTED_GRAY))
+            );
         }
 
         this.progressByPlayer.clear();
         this.activeGame = this.registry.activate(nextGame);
+
         MinigameDefinition<?> activeDefinition = this.activeGame.definition();
 
-        Bukkit.broadcast(Component.text("Minigame gestart: " + activeDefinition.displayName()));
-        Bukkit.broadcast(this.describeObjective(this.activeGame));
-        Bukkit.broadcast(Component.text("Reward: " + activeDefinition.reward()));
+        Bukkit.broadcast(
+                prefix()
+                        .append(Component.text(activeDefinition.displayName(), WHITE).decorate(TextDecoration.BOLD))
+                        .append(Component.text(" is gestart! ", MUTED_GRAY))
+                        .append(Component.text("\n", MUTED_GRAY))
+                        .append(Component.text("Reward: ", MUTED_GRAY))
+                        .append(Component.text(String.valueOf(activeDefinition.reward()), AQUA).decorate(TextDecoration.BOLD))
+        );
     }
 
     private MinigameDefinition<?> nextRotationGame() {

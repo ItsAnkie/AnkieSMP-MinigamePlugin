@@ -26,7 +26,7 @@ public final class AnkieSMP_MinigamePlugin extends JavaPlugin {
 
         String rewardCommand = this.getConfig().getString(
                 "rewardCommand",
-                "adjustbonusclaimblocks {player} {reward}"
+                "eco give {player} {reward}"
         );
 
         MinigameRegistry registry = new MinigameRegistry(this);
