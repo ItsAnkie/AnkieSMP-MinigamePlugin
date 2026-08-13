@@ -1,0 +1,66 @@
+challengeIntervalSeconds: 60
+announcementLeadTimeSeconds: 10
+rewardCommand: "eco give {player} {reward}"
+
+games:
+  - id: kill_cow
+    type: kill_entity
+    display_name: Kill 3 cows
+    amount: 3
+    reward: 300
+    settings:
+      entity: COW
+
+  - id: break_stone
+    type: break_block
+    display_name: Break 25 stone
+    amount: 25
+    reward: 200
+    settings:
+      block: STONE
+
+  - id: fill_water_bucket
+    type: interaction
+    display_name: Fill 1 water bucket
+    amount: 1
+    reward: 200
+    settings:
+      item: WATER_BUCKET
+
+  - id: craft_cake
+    type: craft_item
+    display_name: Craft a cake
+    amount: 1
+    reward: 500
+    settings:
+      item: CAKE
+
+  - id: farm_wheat
+    type: farm_item
+    display_name: Harvest 20 wheat
+    amount: 20
+    reward: 250
+    settings:
+      block: WHEAT
+
+  - id: harvest_glow_berries
+    type: farm_item
+    display_name: Harvest 3 glow berries
+    amount: 3
+    reward: 500
+    settings:
+      block: CAVE_VINES_PLANT
+
+  - id: type_the_word
+    type: chat_word
+    display_name: Type the word
+    amount: 1
+    reward: 200
+    settings:
+      ignore_case: true
+      trim_input: true
+      words:
+        - diamant
+        - creeper
+        - nether
+        - minecraft

@@ -1,0 +1,13 @@
+name: AnkieSMP_MinigamePlugin
+description: $description
+version: '${version}'
+
+main: com.rensjam.AnkieSMP_MinigamePlugin.AnkieSMP_MinigamePlugin
+api-version: '26.1.2'
+load: POSTWORLD
+
+authors: [ RensJAM ]
+
+commands:
+  ankieminigames:
+    permission: ankieminigames.reload
