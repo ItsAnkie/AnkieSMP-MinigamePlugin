@@ -1,10 +1,12 @@
 package com.rensjam.AnkieSMP_MinigamePlugin.minigame.type;
 
+import com.rensjam.AnkieSMP_MinigamePlugin.minigame.core.CustomColors;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.core.MinigameDefinition;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.core.MinigameManager;
 import com.rensjam.AnkieSMP_MinigamePlugin.minigame.core.MinigameType;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -86,7 +88,11 @@ public final class ChatWordMinigame implements MinigameType<ChatWordMinigame.Set
             selectedWord = "(geen woord geselecteerd)";
         }
 
-        return Component.text("Typ als eerste dit woord in de chat: " + selectedWord);
+        return Component
+                .text("Typ als eerste ", CustomColors.MUTED_GRAY)
+                .append(Component.text(selectedWord, CustomColors.WHITE)
+                        .decorate(TextDecoration.BOLD))
+                .append(Component.text(" in de chat!", CustomColors.MUTED_GRAY));
     }
 
     @EventHandler

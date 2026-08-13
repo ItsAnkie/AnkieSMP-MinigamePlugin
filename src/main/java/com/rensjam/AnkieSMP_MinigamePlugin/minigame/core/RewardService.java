@@ -27,6 +27,5 @@ public final class RewardService {
             return;
         }
 
-        player.sendMessage(Component.text("Je reward is uitgekeerd: " + rewardAmount));
     }
 }

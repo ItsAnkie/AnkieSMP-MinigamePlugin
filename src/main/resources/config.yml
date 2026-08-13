@@ -1,13 +1,13 @@
-challengeIntervalSeconds: 30
+challengeIntervalSeconds: 60
 announcementLeadTimeSeconds: 10
-rewardCommand: "adjustbonusclaimblocks {player} {reward}"
+rewardCommand: "eco give {player} {reward}"
 
 games:
   - id: kill_cow
     type: kill_entity
     display_name: Kill 3 cows
     amount: 3
-    reward: 5
+    reward: 300
     settings:
       entity: COW
 
@@ -15,7 +15,7 @@ games:
     type: break_block
     display_name: Break 25 stone
     amount: 25
-    reward: 5
+    reward: 200
     settings:
       block: STONE
 
@@ -23,7 +23,7 @@ games:
     type: interaction
     display_name: Fill 1 water bucket
     amount: 1
-    reward: 5
+    reward: 200
     settings:
       item: WATER_BUCKET
 
@@ -31,7 +31,7 @@ games:
     type: craft_item
     display_name: Craft a cake
     amount: 1
-    reward: 5
+    reward: 500
     settings:
       item: CAKE
 
@@ -39,7 +39,7 @@ games:
     type: farm_item
     display_name: Harvest 20 wheat
     amount: 20
-    reward: 5
+    reward: 250
     settings:
       block: WHEAT
 
@@ -47,7 +47,7 @@ games:
     type: farm_item
     display_name: Harvest 3 glow berries
     amount: 3
-    reward: 5
+    reward: 500
     settings:
       block: CAVE_VINES_PLANT
 
@@ -55,7 +55,7 @@ games:
     type: chat_word
     display_name: Type the word
     amount: 1
-    reward: 5
+    reward: 200
     settings:
       ignore_case: true
       trim_input: true
