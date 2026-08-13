@@ -22,15 +22,12 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
+import static com.rensjam.AnkieSMP_MinigamePlugin.minigame.core.CustomColors.*;
+
 public final class MinigameManager {
 
-    private static final TextColor DARK_PURPLE = NamedTextColor.DARK_PURPLE;
-    private static final TextColor LIGHT_PURPLE = NamedTextColor.LIGHT_PURPLE;
-    private static final TextColor AQUA = NamedTextColor.AQUA;
-    private static final TextColor MUTED_GRAY = TextColor.color(163, 163, 178);
-    private static final TextColor WHITE = NamedTextColor.WHITE;
 
-    private static Component prefix() {
+    private Component prefix() {
         return Component.text("[", DARK_PURPLE)
                 .append(Component.text("AnkieSMP ", DARK_PURPLE).decorate(TextDecoration.BOLD))
                 .append(Component.text("Minigames", LIGHT_PURPLE).decorate(TextDecoration.BOLD))
@@ -163,7 +160,7 @@ public final class MinigameManager {
         MinigameDefinition<?> completedGame = this.activeGame.definition();
 
         Bukkit.broadcast(
-                prefix()
+                this.prefix()
                         .append(Component.text(player.getName(), LIGHT_PURPLE).decorate(TextDecoration.BOLD))
                         .append(Component.text(" won ", MUTED_GRAY))
                         .append(Component.text(completedGame.displayName(), WHITE).decorate(TextDecoration.BOLD))
@@ -184,7 +181,7 @@ public final class MinigameManager {
 
         if (this.announcementLeadTimeSeconds > 0 && this.countdownSeconds == this.announcementLeadTimeSeconds) {
             Bukkit.broadcast(
-                    prefix()
+                    this.prefix ()
                             .append(Component.text("Nieuwe minigame over ", MUTED_GRAY))
                             .append(Component.text(this.announcementLeadTimeSeconds + "s", AQUA).decorate(TextDecoration.BOLD))
             );
@@ -208,7 +205,7 @@ public final class MinigameManager {
 
         if (this.activeGame != null) {
             Bukkit.broadcast(
-                    prefix().append(Component.text("Niemand won de vorige ronde.", MUTED_GRAY))
+                    this.prefix().append(Component.text("Niemand won de vorige ronde.", MUTED_GRAY))
             );
         }
 
@@ -217,14 +214,33 @@ public final class MinigameManager {
 
         MinigameDefinition<?> activeDefinition = this.activeGame.definition();
 
-        Bukkit.broadcast(
-                prefix()
-                        .append(Component.text(activeDefinition.displayName(), WHITE).decorate(TextDecoration.BOLD))
-                        .append(Component.text(" is gestart! ", MUTED_GRAY))
-                        .append(Component.text("\n", MUTED_GRAY))
-                        .append(Component.text("Reward: ", MUTED_GRAY))
-                        .append(Component.text(String.valueOf(activeDefinition.reward()), AQUA).decorate(TextDecoration.BOLD))
-        );
+        Component startMessage = this.prefix()
+                .append(Component.text(activeDefinition.displayName(), WHITE)
+                        .decorate(TextDecoration.BOLD))
+                .append(Component.text(" is gestart! ", MUTED_GRAY));
+
+        Bukkit.broadcast(startMessage);
+
+        if (this.activeGame != null) {
+
+            Component detailsMessage = this.prefix();
+
+            if (activeDefinition.typeKey().equals("chat_word")) {
+                detailsMessage = detailsMessage
+                        .append(this.describeObjective(this.activeGame))
+                        .append(Component.text("\n", MUTED_GRAY));
+            }
+
+            detailsMessage = detailsMessage
+                    .append(this.prefix())
+                    .append(Component.text("Reward: ", MUTED_GRAY))
+                    .append(Component.text(
+                            String.valueOf(activeDefinition.reward()),
+                            AQUA
+                    ).decorate(TextDecoration.BOLD));
+
+            Bukkit.broadcast(detailsMessage);
+        }
     }
 
     private MinigameDefinition<?> nextRotationGame() {
@@ -238,6 +254,6 @@ public final class MinigameManager {
     }
 
     private <T> @NonNull Component describeObjective(@NonNull ActiveMinigame<T> activeMinigame) {
-        return Component.text("Doel: ").append(activeMinigame.type().describeObjective(activeMinigame.definition()));
+        return activeMinigame.type().describeObjective(activeMinigame.definition());
     }
 }
